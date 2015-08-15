@@ -1,0 +1,47 @@
+# Contributor: listx <linusarver <at> gmail <dot> com>
+pkgname=emacs-zenburn-emacs-mod-git
+pkgver=20130425
+pkgrel=1
+_gitname="zenburn-emacs"
+_gitnamebranch="zenburn-emacs-mod"
+_gitroot="git://github.com/listx/$_gitname"
+pkgdesc="old package; download emacs-zenmonk-git instead"
+arch=('any')
+url="https://github.com/listx/$_gitname"
+depends=('emacs' 'emacs-color-theme')
+makedepends=('git')
+license=('GPL')
+provides=('emacs-zenburn-emacs-mod')
+conflicts=('emacs-zenburn-emacs-mod')
+install=$pkgname.install
+
+build() {
+  # create persistent build directory
+  mkdir -p $startdir/src
+
+  cd $startdir/src
+
+  if [[ -d $_gitnamebranch ]]; then
+    cd $_gitnamebranch
+    git clean -dxf
+    git reset --hard
+    msg "Pulling from GIT server..."
+    git pull origin mod
+  else
+    git clone --depth 1 $_gitroot $_gitnamebranch
+    cd $_gitnamebranch
+    git fetch origin mod:mod
+    git checkout mod
+  fi
+
+  # compile for speed
+  #emacs -batch -f batch-byte-compile *.el
+}
+
+package() {
+  # create destination path
+  install -d $pkgdir/usr/share/emacs/site-lisp/$_gitnamebranch
+  # copy over files into path
+  cp $startdir/src/$_gitnamebranch/*.el $pkgdir/usr/share/emacs/site-lisp/$_gitnamebranch
+  cp $startdir/src/$_gitnamebranch/README-mod $pkgdir/usr/share/emacs/site-lisp/$_gitnamebranch
+}
